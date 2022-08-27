@@ -10,6 +10,8 @@
 #include <algorithm> 
 #include <numeric> 
 #include <chrono>
+#include <latch>
+#include <barrier>
 /*
 	After previous two notes about mutex, we learned how to protect the shared data. However, sometimes, we
 	need to synchronize actions on separate threads.
@@ -30,11 +32,12 @@
 //#define BLK3
 // 2. std::packaged_task<> // 
 //#define BLK4
-// 3. 
+// 3. Manually create std::promise and std::future
 #define BLK5
 
-
+// sync with latches and barrier
 #define BLK6
+
 #define BLK7
 #define BLK8
 
@@ -336,13 +339,13 @@ f7.wait();
 	std::packaged_task <> ties a future to a function or callable object.
 
 	When the std::packaged_task<> is invoked, it calls the associated funciton or callable object
-	and makes the future ready. With the returned value stored as the associated data, this can be used 
-	as a building block for thread pools. 
-		
-	The template parameter for std::packaged_task<> is a funciton signature. 
+	and makes the future ready. With the returned value stored as the associated data, this can be used
+	as a building block for thread pools.
+
+	The template parameter for std::packaged_task<> is a funciton signature.
 	Like std::packaged_task< void () > for a function taking no parameter with no return value
-		The type does not have to match excatly because the implicit cast will happen. 
-	
+		The type does not have to match excatly because the implicit cast will happen.
+
 	The Parameter of the constructor => must be anything callable which matches the template argument
 */
 double accum(double* beg, double* end, double init) {
@@ -384,8 +387,8 @@ int main() {
 	std::thread t2(std::move(pt2), half, last, 0.0);
 
 	// using the future.get() method to get the result from the shared state // 
-	double result = f1.get() + f2.get(); 
-	
+	double result = f1.get() + f2.get();
+
 	t1.join();
 	t2.join();
 	std::cout << "The value of result is: " << result << std::endl;
@@ -398,3 +401,90 @@ int main() {
 #ifdef BLK5
 
 #endif // BLK5
+
+#ifdef BLK6
+/*
+	A latch is a sync object that becomes ready when the counter decremented to zero.
+		Once it is ready, it stays ready until the end of the life time.
+		Light weighted for a series of event occurs
+
+	Latch is good for resolving the thread starting problem.
+	Also, this is not copyable ( just like mutex )
+
+*/
+//-----------------------
+//int main() {
+//	// make a latch and counter set 2
+//	std::latch myLatch(2);
+//	// arrive and wait for the latch // 
+//	// So this thread is blocked and waiting for latch counter reaches 0 // 
+//	std::thread t1([&]() {
+//		myLatch.arrive_and_wait();
+//		std::cout << "Hello from t1 thread\n";
+//		});
+//
+//	std::cout << "Hello from main thread\n";
+//	myLatch.arrive_and_wait();
+//	std::cout << "before join\n";
+//	t1.join();
+//	std::cout << "after join\n";
+//	std::cout << "Hello again from main thread\n";
+//}
+//-----------------------
+
+// or 
+//-----------------------
+//int main() {
+//	// make a latch and counter set 1
+//	std::latch myLatch(1);
+//	// this time just wait for the latch // 
+//	// So this thread is blocked and waiting for latch counter reaches 0 // 
+//	std::thread t1([&]() {
+//		myLatch.wait();
+//		std::cout << "Hello from t1 thread\n";
+//	});
+//
+//	std::cout << "Hello from main thread\n";
+//	myLatch.arrive_and_wait();
+//	std::cout << "before join\n";
+//	t1.join();
+//	std::cout << "after join\n";
+//	std::cout << "Hello again from main thread\n";
+//}
+//-----------------------
+
+
+//*****************************************************
+
+
+/*
+	std::barrier is a template
+	barrier is more heavy weighted compared to latch
+
+	A barrier is reusable sync component
+		Each thread can only decrement the counter once per cycle
+		When the thread arrive at barrier, they are blocked until all of the thread involved have arrived
+		Then they got all released. Then the threads can arrived at the barrier again.
+
+*/
+
+int main() {
+	// the syntax is 
+	// std::barrier BarierName (counterNum, anyCallable has no exception) // 
+	// Second argument is actually the completion function //
+	// When the barrier comes down, the function will be executed // 
+	std::barrier my_barr(2, []() noexcept {puts("Green Light is on. Go ahead!"); });
+	std::thread t1(
+		[&]() {
+			std::cout << "t1 is setting up\n";
+			my_barr.arrive_and_wait();
+			std::cout << "Barrier down, t1 is running\n";
+		});
+	std::cout << "main is setting up\n";
+	my_barr.arrive_and_wait();
+	std::cout << "Barrier down, t2 is running \n";
+	t1.join();
+}
+
+
+#endif // BLK6
