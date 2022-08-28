@@ -36,7 +36,7 @@
 #define BLK5
 
 // sync with latches and barrier
-#define BLK6
+//#define BLK6
 
 #define BLK7
 #define BLK8
@@ -399,6 +399,63 @@ int main() {
 
 
 #ifdef BLK5
+/*
+	std::promise<typeName> provides a way to settin a value ( the value type is under a typeName ) that can be read
+	through an associated std::future<typeName> object.
+
+	Normally, std::promise and std::future is paired up and used in the code.
+
+	std::future object associated with a given std::promise is implemented via get_future() method
+	( packaged_task also have a same method )
+	When the value of the promise is set( using the promise.set_value() , the future becomes ready and can be used to retrieve the stored value.
+
+	If the std::promise is destoryed without setting a value, an exception is stored inside the promise.
+
+
+
+*/
+////---------------------------------------------------------------
+//double accum(double* beg, double* end, double init) {
+//	return  std::accumulate(beg, end, init);
+//}
+////________---------------------------_______________________
+//void task(std::promise<double>& p, double* beg, double* end, double init) {
+//	// in the function using the promise.set_value(task(args..))
+//	// BTW it only takes values unlike std::bind, or std::thread.
+//	p.set_value(accum(beg, end, init));
+//}
+//
+//int main() {
+//	std::vector<double> vec(10000000, 0.5);
+//	double* first = &vec[0];
+//	double* half = first + vec.size() / 2;
+//	double* last = first + vec.size();
+//	std::cout << "Waiting for the result..." << std::endl;
+//	std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
+//	std::promise<double> p1, p2;
+//	// Like I said, using promiseName.get_future() to get a future returned and stored. 
+//	std::future<double> f1 = p1.get_future();
+//	std::future<double> f2 = p2.get_future();
+//	// Passing the future to the function, unlike packaged_task 
+//	std::thread t1(task, ref(p1), first, half, 0.0);
+//	std::thread t2(task, ref(p2), half, last, 0.0);
+//	std::cout << "Task Value = " << f1.get() << std::endl;
+//	std::cout << "Task Value = " << f2.get() << std::endl;
+//	t1.join();
+//	t2.join();
+//}
+////---------------------------------------------------------------
+
+/*
+	promise also has a method, set_exception()
+	Unlike set_value, this is just for exception. And future.get() will let the exception comes out from a promise
+	some_promise.set_exception(std::make_exception_ptr(std::logic_error("foo ")));
+
+	Similar process happened if you choose to use packaged_task or async()
+	If there is an exception triggered in the task, the exception will be stored in the future,
+	and ready to throw at get() method is invoked.
+
+*/
 
 #endif // BLK5
 
