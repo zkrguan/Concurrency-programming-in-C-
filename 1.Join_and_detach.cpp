@@ -2,9 +2,9 @@
 #include <iostream>
 #include <algorithm>
 
-/// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+/// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
 /// By writting it down, you will always find the way home. 
-///	>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//							
+///	>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//							
 //1. Thoughts on the detach join
 	// CPP referenece website has limited explanation on the detach only .
 	// What is the difference between the join()?
